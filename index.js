@@ -21,12 +21,12 @@ const auth = (req, res, next) => {
     }
 };
 
-app.get('/admin', auth, (req, res) => {
-    res.send('Welcome to admin page');
-});
-
 app.get('/', (req, res) => {
     res.send('Hello World');
+});
+
+app.get('/admin', auth, (req, res) => {
+    res.send('Welcome to admin page');
 });
 
 app.get('/page', (req, res) => {
@@ -34,8 +34,17 @@ app.get('/page', (req, res) => {
     res.send('Hello Page');
 });
 
+app.get('/error', (req, res) => {
+    chicken.fly();
+});
+
 app.use((req, res) => {
     res.status(404).send('Page Not Found');
+});
+
+app.use ((err, req, res, next) => {
+    console.error('********** Error **********');
+    next(err);
 });
 
 app.listen(3000, () => {
