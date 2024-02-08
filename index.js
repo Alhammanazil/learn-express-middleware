@@ -1,10 +1,9 @@
 const express = require('express');
-const morgan = require('morgan');
-const path = require('path');
 const app = express();
+const morgan = require('morgan');
+const ErrorHandler = require('./ErrorHandler');
+
 app.use(morgan('dev'));
-app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
     req.timeRequest = Date.now();
@@ -16,9 +15,8 @@ const auth = (req, res, next) => {
     const { password } = req.query;
     if (password === 'somethingidk') {
         next();
-    } else {
-        throw new Error('You are not authorized');
     }
+    throw new ErrorHandler('You are not authorized', 401);
 };
 
 app.get('/', (req, res) => {
@@ -38,13 +36,17 @@ app.get('/error', (req, res) => {
     chicken.fly();
 });
 
+app.get('/general/error', (req, res) => {
+    throw new ErrorHandler();
+});
+
 app.use((req, res) => {
     res.status(404).send('Page Not Found');
 });
 
-app.use ((err, req, res, next) => {
-    console.error('********** Error **********');
-    next(err);
+app.use((err, req, res, next) => {
+    const { status = 403, message = "Something went wrong" } = err;
+    res.status(status).send(message);
 });
 
 app.listen(3000, () => {
